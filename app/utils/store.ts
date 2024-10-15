@@ -1,5 +1,3 @@
-import zustymiddleware from "zustymiddlewarets";
-
 import { create } from "zustand";
 import { combine, persist } from "zustand/middleware";
 import { Updater } from "../typing";
@@ -20,10 +18,13 @@ type MakeUpdater<T> = {
   update: Updater<T>;
 };
 
-type SetStoreState<T> = (
-  partial: T | Partial<T> | ((state: T) => T | Partial<T>),
-  replace?: boolean | undefined,
-) => void;
+type SetStoreState<T> = {
+  (
+    partial: T | Partial<T> | ((state: T) => T | Partial<T>),
+    replace?: boolean | undefined,
+  ): void;
+  (state: T | ((state: T) => T), replace: true): void;
+};
 
 export function createPersistStore<T extends object, M>(
   state: T,
@@ -42,7 +43,7 @@ export function createPersistStore<T extends object, M>(
         },
         (set, get) => {
           return {
-            ...methods(set, get as any),
+            ...methods(set as any, get as any),
 
             markUpdate() {
               set({ lastUpdateTime: Date.now() } as Partial<
